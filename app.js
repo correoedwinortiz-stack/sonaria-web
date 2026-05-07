@@ -132,6 +132,7 @@ class SonariaLanding {
     connectStream() {
         this.createAudio();
         this.trackTitle.textContent = "Conectando...";
+        this.setPlayingState(true); // Mostrar icono de pausa/carga inmediatamente
         
         // Cache-busting para evitar datos obsoletos en proxies/Cloudflare
         this.audio.src = this.streamUrl + '?nocache=' + Date.now();
@@ -142,6 +143,8 @@ class SonariaLanding {
                 console.warn("📡 [Radio] Error al iniciar reproducción:", err.message);
                 if (this.userWantsPlay) {
                     this.scheduleReconnect("Reintentando conexión");
+                } else {
+                    this.setPlayingState(false);
                 }
             });
         }
@@ -160,16 +163,16 @@ class SonariaLanding {
                 this.audio = null; // Desreferenciar ANTES para que los handlers no actúen
                 audioToStop.pause();
                 audioToStop.removeAttribute('src');
-                // NO llamar .load() aquí: dispara eventos internos que pueden causar reconexión
             }
 
             this.setPlayingState(false);
-            this.trackTitle.textContent = "Sintonizando señal...";
+            this.trackTitle.textContent = "Radio detenida";
             this.reconnectAttempts = 0;
         } else {
             // REPRODUCIR
             this.userWantsPlay = true;
             this.reconnectAttempts = 0;
+            this.setPlayingState(true); // UI Inmediata
             this.connectStream();
         }
     }
