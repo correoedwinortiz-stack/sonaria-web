@@ -210,22 +210,36 @@ class SonariaLanding {
     }
 
     setPlayingState(playing) {
-        this.isPlaying = playing;
-        
-        // Cambiar el icono inyectando el HTML para que Lucide lo reconozca siempre
-        if (playing) {
-            this.playBtn.innerHTML = '<i data-lucide="pause"></i>';
-            this.disk.classList.add('animate-spin-slow');
-            this.visualizer.classList.add('active');
-        } else {
-            this.playBtn.innerHTML = '<i data-lucide="play"></i>';
-            this.disk.classList.remove('animate-spin-slow');
-            this.visualizer.classList.remove('active');
-        }
-        
-        // Forzar a Lucide a renderizar el nuevo icono
-        if (window.lucide) {
-            window.lucide.createIcons();
+        try {
+            this.isPlaying = playing;
+            console.log("🎨 [UI] Cambiando estado a:", playing ? "Reproduciendo" : "Detenido");
+            
+            if (!this.playBtn) {
+                this.playBtn = document.getElementById('play-btn');
+            }
+
+            if (this.playBtn) {
+                // Inyectar el HTML del icono
+                this.playBtn.innerHTML = playing ? '<i data-lucide="pause"></i>' : '<i data-lucide="play"></i>';
+                
+                // Forzar renderizado de Lucide
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }
+
+            // Actualizar animaciones si los elementos existen
+            if (this.disk) {
+                if (playing) this.disk.classList.add('animate-spin-slow');
+                else this.disk.classList.remove('animate-spin-slow');
+            }
+
+            if (this.visualizer) {
+                if (playing) this.visualizer.classList.add('active');
+                else this.visualizer.classList.remove('active');
+            }
+        } catch (err) {
+            console.error("❌ [UI] Error al actualizar interfaz:", err);
         }
     }
 }
