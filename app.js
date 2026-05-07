@@ -10,7 +10,7 @@
 
 class SonariaLanding {
     constructor() {
-        this.streamUrl = 'https://sonaria.consejo-padres.com/radio.mp3';
+        this.streamUrl = 'https://radio.sonariaradio.online/radio.mp3';
         this.audio = null;
         this.isPlaying = false;
         this.userWantsPlay = false; // Intención del usuario (separada del estado real)
@@ -96,7 +96,7 @@ class SonariaLanding {
 
     initListeners() {
         this.playBtn.addEventListener('click', () => this.togglePlay());
-        
+
         this.volumeSlider.addEventListener('input', (e) => {
             if (this.audio) this.audio.volume = e.target.value;
         });
@@ -113,11 +113,11 @@ class SonariaLanding {
         }
 
         this.reconnectAttempts++;
-        
+
         // Backoff exponencial: 3s, 5s, 8s, 10s, 10s, 10s...
         const delay = Math.min(3000 + (this.reconnectAttempts * 2000), 10000);
-        
-        console.log(`📡 [Radio] ${reason}. Reintento #${this.reconnectAttempts} en ${delay/1000}s`);
+
+        console.log(`📡 [Radio] ${reason}. Reintento #${this.reconnectAttempts} en ${delay / 1000}s`);
         this.trackTitle.textContent = `${reason} - Reconectando...`;
 
         this.reconnectTimer = setTimeout(() => {
@@ -132,10 +132,10 @@ class SonariaLanding {
         this.createAudio();
         this.trackTitle.textContent = "Conectando...";
         this.setPlayingState(true); // Mostrar icono de pausa/carga inmediatamente
-        
+
         // Cache-busting para evitar datos obsoletos en proxies/Cloudflare
         this.audio.src = this.streamUrl + '?nocache=' + Date.now();
-        
+
         const playPromise = this.audio.play();
         if (playPromise) {
             playPromise.catch(err => {
@@ -179,12 +179,12 @@ class SonariaLanding {
     startWatchdog() {
         this.stopWatchdog();
         this.lastDataTime = Date.now();
-        
+
         this.watchdogTimer = setInterval(() => {
             if (!this.userWantsPlay || !this.isPlaying) return;
 
             const silenceDuration = Date.now() - this.lastDataTime;
-            
+
             // Si llevamos 45 segundos sin timeupdate/progress, reconectar
             // (Tolerante a silencios entre canciones que duran ~10-20s)
             if (silenceDuration > 45000) {
@@ -212,17 +212,20 @@ class SonariaLanding {
     setPlayingState(playing) {
         try {
             this.isPlaying = playing;
-            
+            console.log("🎨 [UI] Cambiando estado a:", playing ? "Reproduciendo" : "Detenido");
+
             if (!this.playBtn) {
                 this.playBtn = document.getElementById('play-btn');
             }
 
             if (this.playBtn) {
-                // SVGs directos para evitar errores de librerías externas
-                const playSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
-                const pauseSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
-                
-                this.playBtn.innerHTML = playing ? pauseSVG : playSVG;
+                // Inyectar el HTML del icono
+                this.playBtn.innerHTML = playing ? '<i data-lucide="pause"></i>' : '<i data-lucide="play"></i>';
+
+                // Forzar renderizado de Lucide
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
             }
 
             // Actualizar animaciones si los elementos existen
