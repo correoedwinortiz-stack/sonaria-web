@@ -18,6 +18,8 @@ class SonariaLanding {
         this.trackTitle = document.getElementById('track-title');
 
         this.initListeners();
+        this.checkInterval = null;
+        this.reconnectTimer = null;
     }
 
     initListeners() {
@@ -30,28 +32,65 @@ class SonariaLanding {
         this.audio.addEventListener('playing', () => {
             this.trackTitle.textContent = "Transmitiendo en Vivo";
             this.setPlayingState(true);
+            this.stopReconnectTimer();
+            this.startStallCheck();
         });
 
         this.audio.addEventListener('pause', () => {
             this.setPlayingState(false);
+            this.stopStallCheck();
         });
 
-        this.audio.addEventListener('error', () => {
-            this.trackTitle.textContent = "Señal no disponible";
-            this.setPlayingState(false);
-        });
+        this.audio.addEventListener('error', () => this.handleConnectionError("Error de señal"));
+        this.audio.addEventListener('stalled', () => this.handleConnectionError("Señal débil..."));
     }
 
-    togglePlay() {
-        if (this.isPlaying) {
+    handleConnectionError(msg) {
+        if (!this.isPlaying) return;
+        
+        console.warn("📡 [Radio] " + msg + ". Intentando reconectar...");
+        this.trackTitle.textContent = msg + " - Reconectando...";
+        
+        this.stopReconnectTimer();
+        this.reconnectTimer = setTimeout(() => {
+            this.togglePlay(true); // Forzar reinicio
+        }, 5000); // Reintentar cada 5 segundos
+    }
+
+    stopReconnectTimer() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+    }
+
+    startStallCheck() {
+        this.stopStallCheck();
+        let lastTime = 0;
+        this.checkInterval = setInterval(() => {
+            if (this.isPlaying && this.audio.currentTime === lastTime) {
+                this.handleConnectionError("Señal perdida");
+            }
+            lastTime = this.audio.currentTime;
+        }, 10000); // Verificar cada 10 segundos si el tiempo avanza
+    }
+
+    stopStallCheck() {
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+    }
+
+    togglePlay(forceReconnect = false) {
+        if (this.isPlaying && !forceReconnect) {
             this.audio.pause();
-            this.audio.src = ""; // Liberar buffer
+            this.audio.src = ""; 
         } else {
             this.trackTitle.textContent = "Conectando...";
             this.audio.src = this.streamUrl + '?t=' + Date.now();
             this.audio.play().catch(err => {
-                console.error("Error Play:", err);
-                this.trackTitle.textContent = "Error de conexión";
+                this.handleConnectionError("Reintentando");
             });
         }
     }
