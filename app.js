@@ -212,20 +212,17 @@ class SonariaLanding {
     setPlayingState(playing) {
         try {
             this.isPlaying = playing;
-            console.log("🎨 [UI] Cambiando estado a:", playing ? "Reproduciendo" : "Detenido");
             
             if (!this.playBtn) {
                 this.playBtn = document.getElementById('play-btn');
             }
 
             if (this.playBtn) {
-                // Inyectar el HTML del icono
-                this.playBtn.innerHTML = playing ? '<i data-lucide="pause"></i>' : '<i data-lucide="play"></i>';
+                // SVGs directos para evitar errores de librerías externas
+                const playSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+                const pauseSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
                 
-                // Forzar renderizado de Lucide
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
+                this.playBtn.innerHTML = playing ? pauseSVG : playSVG;
             }
 
             // Actualizar animaciones si los elementos existen
