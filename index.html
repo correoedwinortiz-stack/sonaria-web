@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonaría Radio | Siente la Música</title>
+    <link rel="icon" href="assets/img/logo_sonaria.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Fondo animado -->
+    <div class="bg-glow"></div>
+    
+    <main class="container">
+        <header>
+            <div class="logo-container">
+                <img src="assets/img/logo_sonaria.png" alt="Sonaría Logo" class="main-logo">
+                <div class="brand-text">
+                    <h1 class="brand-name">Sonaría<span>Radio</span></h1>
+                    <p class="brand-tagline">Sistema Orientador Normalista De Apoyo Radial IA</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="pulse"></span> EN VIVO
+            </div>
+        </header>
+
+        <section class="player-card">
+            <!-- ... (contenido del disco y visualizador) ... -->
+            <div class="disk-container">
+                <div class="disk" id="disk">
+                    <img src="assets/img/logo_sonaria.png" alt="Vinyl" class="disk-inner">
+                </div>
+                <div class="visualizer" id="visualizer">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <div class="info-container">
+                <h2 class="track-title" id="track-title">Sintonizando señal...</h2>
+                <p class="artist-name" id="artist-name">Escuela Normal Superior de Monterrey</p>
+                
+                <div class="controls">
+                    <button class="btn-play" id="play-btn">
+                        <i data-lucide="play" id="play-icon"></i>
+                    </button>
+                    
+                    <div class="volume-container">
+                        <i data-lucide="volume-2"></i>
+                        <input type="range" min="0" max="1" step="0.1" value="0.8" class="volume-slider" id="volume-slider">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nueva Sección de Interacción -->
+        <section class="interaction-card">
+            <div class="interaction-info">
+                <h3>Interactúa con la Radio</h3>
+                <p>Pide tus canciones, envía dedicatorias y vota en el ranking diario directamente desde Telegram.</p>
+                <a href="https://t.me/sonariaradio_bot" target="_blank" class="btn-telegram">
+                    <i data-lucide="send"></i> Abrir en Telegram
+                </a>
+            </div>
+            <div class="qr-container">
+                <img src="assets/img/qr_telegram.png" alt="QR Telegram" class="qr-img">
+                <span>@SONARIARADIO</span>
+            </div>
+        </section>
+
+        <footer class="social-links">
+            <a href="#" title="Facebook"><i data-lucide="facebook"></i></a>
+            <a href="#" title="Instagram"><i data-lucide="instagram"></i></a>
+            <a href="#" title="WhatsApp"><i data-lucide="message-circle"></i></a>
+            <p class="footer-note">© 2026 Sonaría ENSM. Todos los derechos reservados.</p>
+            <p class="footer-tagline">Sistema Orientador Normalista De Apoyo Radial IA</p>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
