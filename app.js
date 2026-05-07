@@ -24,7 +24,6 @@ class SonariaLanding {
 
         // Elementos UI
         this.playBtn = document.getElementById('play-btn');
-        this.playIcon = document.getElementById('play-icon');
         this.disk = document.getElementById('disk');
         this.visualizer = document.getElementById('visualizer');
         this.volumeSlider = document.getElementById('volume-slider');
@@ -213,18 +212,21 @@ class SonariaLanding {
     setPlayingState(playing) {
         this.isPlaying = playing;
         
+        // Cambiar el icono inyectando el HTML para que Lucide lo reconozca siempre
         if (playing) {
-            this.playIcon.setAttribute('data-lucide', 'pause');
+            this.playBtn.innerHTML = '<i data-lucide="pause"></i>';
             this.disk.classList.add('animate-spin-slow');
             this.visualizer.classList.add('active');
         } else {
-            this.playIcon.setAttribute('data-lucide', 'play');
+            this.playBtn.innerHTML = '<i data-lucide="play"></i>';
             this.disk.classList.remove('animate-spin-slow');
             this.visualizer.classList.remove('active');
         }
         
-        // Actualizar iconos de Lucide
-        lucide.createIcons();
+        // Forzar a Lucide a renderizar el nuevo icono
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
     }
 }
 
