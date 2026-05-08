@@ -22,6 +22,10 @@ class SonariaLanding {
         this.watchdogTimer = null;
         this.lastDataTime = 0;
 
+        // Audio de emergencia (fallback local)
+        this.emergencyAudio = null;
+        this.emergencyUrl = 'assets/audio/emergencia.mp3';
+
         // Elementos UI
         this.playBtn = document.getElementById('play-btn');
         this.disk = document.getElementById('disk');
@@ -55,6 +59,7 @@ class SonariaLanding {
             this.trackTitle.textContent = "Transmitiendo en Vivo";
             this.setPlayingState(true);
             this.startWatchdog();
+            this.stopEmergency(); // Detener audio de emergencia si estaba sonando
         });
 
         audioEl.addEventListener('waiting', () => {
@@ -126,6 +131,32 @@ class SonariaLanding {
                 this.connectStream();
             }
         }, delay);
+
+        this.startEmergency(); // Iniciar audio de emergencia mientras reconecta
+    }
+
+    startEmergency() {
+        if (!this.userWantsPlay) return;
+        if (this.emergencyAudio && !this.emergencyAudio.paused) return;
+
+        console.log("📢 [Radio] Iniciando audio de emergencia...");
+        if (!this.emergencyAudio) {
+            this.emergencyAudio = new Audio(this.emergencyUrl);
+            this.emergencyAudio.loop = true;
+            this.emergencyAudio.volume = this.volumeSlider ? this.volumeSlider.value : 0.8;
+        }
+        
+        this.emergencyAudio.play().catch(err => {
+            console.warn("⚠️ [Radio] No se pudo reproducir el audio de emergencia:", err.message);
+        });
+    }
+
+    stopEmergency() {
+        if (this.emergencyAudio) {
+            console.log("⏹️ [Radio] Deteniendo audio de emergencia.");
+            this.emergencyAudio.pause();
+            this.emergencyAudio.currentTime = 0;
+        }
     }
 
     connectStream() {
@@ -167,6 +198,7 @@ class SonariaLanding {
             this.setPlayingState(false);
             this.trackTitle.textContent = "Radio detenida";
             this.reconnectAttempts = 0;
+            this.stopEmergency(); // Asegurar que el audio de emergencia se detenga
         } else {
             // REPRODUCIR
             this.userWantsPlay = true;
