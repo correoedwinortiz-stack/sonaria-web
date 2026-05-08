@@ -17,7 +17,7 @@ class SonariaLanding {
 
         // Reconexión inteligente
         this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 50;
+        this.maxReconnectAttempts = 999999; // Reintentos infinitos
         this.reconnectTimer = null;
         this.watchdogTimer = null;
         this.lastDataTime = 0;
@@ -114,8 +114,8 @@ class SonariaLanding {
 
         this.reconnectAttempts++;
 
-        // Backoff exponencial: 3s, 5s, 8s, 10s, 10s, 10s...
-        const delay = Math.min(3000 + (this.reconnectAttempts * 2000), 10000);
+        // Backoff exponencial más agresivo: 2s, 4s, 6s... máx 10s
+        const delay = Math.min(2000 + (this.reconnectAttempts * 1000), 10000);
 
         console.log(`📡 [Radio] ${reason}. Reintento #${this.reconnectAttempts} en ${delay / 1000}s`);
         this.trackTitle.textContent = `${reason} - Reconectando...`;
