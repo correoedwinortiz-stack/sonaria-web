@@ -10,7 +10,7 @@
 
 class SonariaLanding {
     constructor() {
-        this.streamUrl = 'https://radio.sonariaradio.online/radio.mp3';
+        this.streamUrl = 'https://radio.sonariaradio.online/stream';
         this.audio = null;
         this.isPlaying = false;
         this.userWantsPlay = false; // Intención del usuario (separada del estado real)
@@ -40,7 +40,7 @@ class SonariaLanding {
             this.audio.load();
         }
         this.audio = new Audio();
-        this.audio.crossOrigin = "anonymous";
+        // this.audio.crossOrigin = "anonymous"; // Desactivado para evitar bloqueos CORS con Icecast nativo
         this.audio.volume = this.volumeSlider ? this.volumeSlider.value : 0.8;
         this.audio.preload = "none";
 
