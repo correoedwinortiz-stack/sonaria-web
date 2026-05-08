@@ -10,7 +10,7 @@
 
 class SonariaLanding {
     constructor() {
-        this.streamUrl = 'https://radio.sonariaradio.online/stream';
+        this.streamUrl = 'https://radio.sonariaradio.online/radio.mp3';
         this.audio = null;
         this.isPlaying = false;
         this.userWantsPlay = false; // Intención del usuario (separada del estado real)
