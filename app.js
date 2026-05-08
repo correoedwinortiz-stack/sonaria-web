@@ -52,21 +52,29 @@ class SonariaLanding {
         const audioEl = this.audio;
 
         // Eventos
+        audioEl.addEventListener('waiting', () => {
+            if (this.audio !== audioEl) return;
+            if (this.userWantsPlay) {
+                this.trackTitle.textContent = "Cargando buffer...";
+                
+                // Si esperamos más de 7 segundos cargando, disparar emergencia
+                this.waitingTimer = setTimeout(() => {
+                    if (this.audio === audioEl && this.userWantsPlay) {
+                        this.scheduleReconnect("Buffer agotado");
+                    }
+                }, 7000);
+            }
+        });
+
         audioEl.addEventListener('playing', () => {
-            if (this.audio !== audioEl) return; // Instancia obsoleta, ignorar
+            if (this.audio !== audioEl) return;
+            if (this.waitingTimer) clearTimeout(this.waitingTimer);
             this.reconnectAttempts = 0;
             this.lastDataTime = Date.now();
             this.trackTitle.textContent = "Transmitiendo en Vivo";
             this.setPlayingState(true);
             this.startWatchdog();
             this.stopEmergency(); // Detener audio de emergencia si estaba sonando
-        });
-
-        audioEl.addEventListener('waiting', () => {
-            if (this.audio !== audioEl) return;
-            if (this.userWantsPlay) {
-                this.trackTitle.textContent = "Cargando buffer...";
-            }
         });
 
         audioEl.addEventListener('error', (e) => {
@@ -81,8 +89,9 @@ class SonariaLanding {
         // 'stalled' no siempre significa desconexión - ser más tolerante
         audioEl.addEventListener('stalled', () => {
             if (this.audio !== audioEl) return;
-            if (this.userWantsPlay && Date.now() - this.lastDataTime > 30000) {
-                this.scheduleReconnect("Señal débil");
+            // Si el stream se atasca por más de 8 segundos, intentar reconectar
+            if (this.userWantsPlay && Date.now() - this.lastDataTime > 8000) {
+                this.scheduleReconnect("Señal estancada");
             }
         });
 
@@ -217,10 +226,8 @@ class SonariaLanding {
 
             const silenceDuration = Date.now() - this.lastDataTime;
 
-            // Si llevamos 45 segundos sin timeupdate/progress, reconectar
-            // (Tolerante a silencios entre canciones que duran ~10-20s)
-            if (silenceDuration > 45000) {
-                console.warn("📡 [Radio] Watchdog: Sin datos por 45s, forzando reconexión");
+            if (silenceDuration > 15000) {
+                console.warn("📡 [Radio] Watchdog: Sin datos por 15s, forzando reconexión");
                 this.stopWatchdog();
                 this.scheduleReconnect("Señal perdida");
             }
