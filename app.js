@@ -22,9 +22,15 @@ class SonariaLanding {
         this.watchdogTimer = null;
         this.lastDataTime = 0;
 
-        // Audio de emergencia (fallback local)
+        // Audio de emergencia (3 pistas alternadas)
         this.emergencyAudio = null;
-        this.emergencyUrl = 'assets/audio/emergencia.mp3';
+        this.emergencyUrls = [
+            'assets/audio/emergencia1.mp3',
+            'assets/audio/emergencia2.mp3',
+            'assets/audio/emergencia3.mp3'
+        ];
+        this.currentEmergencyIndex = 0;
+        this.connectionStartTime = 0;
 
         // Elementos UI
         this.playBtn = document.getElementById('play-btn');
@@ -150,14 +156,22 @@ class SonariaLanding {
 
         console.log("📢 [Radio] Iniciando audio de emergencia...");
         if (!this.emergencyAudio) {
-            this.emergencyAudio = new Audio(this.emergencyUrl);
-            this.emergencyAudio.loop = true;
+            this.emergencyAudio = new Audio();
             this.emergencyAudio.volume = this.volumeSlider ? this.volumeSlider.value : 0.8;
+            // Al terminar cada pista, pasar a la siguiente
+            this.emergencyAudio.addEventListener('ended', () => {
+                this.currentEmergencyIndex = (this.currentEmergencyIndex + 1) % this.emergencyUrls.length;
+                this.emergencyAudio.src = this.emergencyUrls[this.currentEmergencyIndex];
+                this.emergencyAudio.play().catch(() => {});
+            });
         }
-        
-        this.emergencyAudio.play().catch(err => {
-            console.warn("⚠️ [Radio] No se pudo reproducir el audio de emergencia:", err.message);
-        });
+
+        if (this.emergencyAudio.paused) {
+            this.emergencyAudio.src = this.emergencyUrls[this.currentEmergencyIndex];
+            this.emergencyAudio.play().catch(err => {
+                console.warn("⚠️ [Radio] No se pudo reproducir el audio de emergencia:", err.message);
+            });
+        }
     }
 
     stopEmergency() {
@@ -171,9 +185,10 @@ class SonariaLanding {
     connectStream() {
         this.createAudio();
         this.trackTitle.textContent = "Conectando...";
-        this.setPlayingState(true); // Mostrar icono de pausa/carga inmediatamente
+        this.setPlayingState(true);
+        this.connectionStartTime = Date.now();
+        this.startWatchdog(); // Iniciar watchdog desde el intento de conexión
 
-        // Cache-busting para evitar datos obsoletos en proxies/Cloudflare
         this.audio.src = this.streamUrl + '?nocache=' + Date.now();
 
         const playPromise = this.audio.play();
@@ -222,16 +237,21 @@ class SonariaLanding {
         this.lastDataTime = Date.now();
 
         this.watchdogTimer = setInterval(() => {
-            if (!this.userWantsPlay || !this.isPlaying) return;
+            const now = Date.now();
 
-            const silenceDuration = Date.now() - this.lastDataTime;
-
-            if (silenceDuration > 15000) {
+            // Caso 1: Estaba sonando y se cortó el flujo (> 15s)
+            if (this.userWantsPlay && this.isPlaying && now - this.lastDataTime > 15000) {
                 console.warn("📡 [Radio] Watchdog: Sin datos por 15s, forzando reconexión");
                 this.stopWatchdog();
                 this.scheduleReconnect("Señal perdida");
             }
-        }, 5000); // Verificar cada 5s
+            // Caso 2: Intentando conectar sin éxito (> 2s) → emergencia inmediata
+            if (this.userWantsPlay && !this.isPlaying && now - this.connectionStartTime > 2000) {
+                console.warn("📡 [Radio] Watchdog: Sin conexión por 2s, activando emergencia");
+                this.stopWatchdog();
+                this.scheduleReconnect("Sin señal");
+            }
+        }, 500); // Verificar cada 500ms para respetar el umbral de 2s
     }
 
     stopWatchdog() {
