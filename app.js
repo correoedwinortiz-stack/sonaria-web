@@ -79,7 +79,10 @@ class SonariaLanding {
             if (this.waitingTimer) clearTimeout(this.waitingTimer);
             this.reconnectAttempts = 0;
             this.lastDataTime = Date.now();
-            // Eliminamos el texto estático para dejar que updateMetadata lo maneje
+            
+            // Forzar actualización de metadatos inmediata para quitar "Cargando buffer..."
+            this.updateMetadata();
+            
             this.setPlayingState(true);
             this.startWatchdog();
             this.stopEmergency(); // Detener audio de emergencia si estaba sonando
@@ -310,16 +313,15 @@ class SonariaLanding {
     }
 
     async updateMetadata() {
-        // Solo actualizar si el usuario está escuchando o si queremos mostrar qué suena siempre
         try {
             const response = await fetch('https://radio.sonariaradio.online/status-json.xsl');
+            if (!response.ok) throw new Error("Fallo en red");
             const data = await response.json();
             
             if (data && data.icestats && data.icestats.source) {
                 const source = data.icestats.source;
                 let title = "";
                 
-                // Icecast puede devolver un objeto o un array si hay múltiples mounts
                 if (Array.isArray(source)) {
                     const radio = source.find(s => s.listenurl && s.listenurl.includes('/radio.mp3'));
                     title = radio ? radio.title : "";
@@ -330,13 +332,11 @@ class SonariaLanding {
                 if (this.trackTitle) {
                     let newTitle = title || "Transmitiendo en Vivo";
                     
-                    // Reparar Mojibake (UTF-8 interpretado como Latin-1)
                     try {
                         if (newTitle.includes('Ã') || newTitle.includes('ð')) {
                             newTitle = decodeURIComponent(escape(newTitle));
                         }
                     } catch (e) {
-                        // Fallback manual
                         newTitle = newTitle.replace(/Ã¡/g, 'á').replace(/Ã©/g, 'é').replace(/Ã­/g, 'í').replace(/Ã³/g, 'ó').replace(/Ãº/g, 'ú').replace(/Ã±/g, 'ñ');
                     }
 
@@ -345,9 +345,15 @@ class SonariaLanding {
                         console.log("🎶 Ahora suena:", newTitle);
                     }
                 }
+            } else if (this.trackTitle && this.trackTitle.textContent === "Cargando buffer...") {
+                this.trackTitle.textContent = "Transmitiendo en Vivo";
             }
         } catch (err) {
-            // Error silencioso para no ensuciar consola
+            console.warn("⚠️ [Metadata] No se pudieron obtener los datos:", err.message);
+            // Si falló pero estamos sonando, al menos quitemos el "Cargando..."
+            if (this.trackTitle && this.trackTitle.textContent === "Cargando buffer...") {
+                this.trackTitle.textContent = "Transmitiendo en Vivo";
+            }
         }
     }
 }
