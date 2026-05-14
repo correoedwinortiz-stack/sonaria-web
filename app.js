@@ -327,8 +327,7 @@ class SonariaLanding {
                     title = source.title || "";
                 }
 
-                const trackSpan = document.getElementById('current-track');
-                if (trackSpan) {
+                if (this.trackTitle) {
                     let newTitle = title || "Transmitiendo en Vivo";
                     
                     // Reparar Mojibake (UTF-8 interpretado como Latin-1)
@@ -341,8 +340,9 @@ class SonariaLanding {
                         newTitle = newTitle.replace(/Ã¡/g, 'á').replace(/Ã©/g, 'é').replace(/Ã­/g, 'í').replace(/Ã³/g, 'ó').replace(/Ãº/g, 'ú').replace(/Ã±/g, 'ñ');
                     }
 
-                    if (trackSpan.textContent !== newTitle) {
-                        trackSpan.textContent = newTitle;
+                    if (this.trackTitle.textContent !== newTitle) {
+                        this.trackTitle.textContent = newTitle;
+                        console.log("🎶 Ahora suena:", newTitle);
                     }
                 }
             }
