@@ -38,8 +38,10 @@ class SonariaLanding {
         this.visualizer = document.getElementById('visualizer');
         this.volumeSlider = document.getElementById('volume-slider');
         this.trackTitle = document.getElementById('track-title');
+        this.metadataTimer = null;
 
         this.initListeners();
+        this.startMetadataUpdates();
     }
 
     createAudio() {
@@ -77,7 +79,7 @@ class SonariaLanding {
             if (this.waitingTimer) clearTimeout(this.waitingTimer);
             this.reconnectAttempts = 0;
             this.lastDataTime = Date.now();
-            this.trackTitle.textContent = "Transmitiendo en Vivo";
+            // Eliminamos el texto estático para dejar que updateMetadata lo maneje
             this.setPlayingState(true);
             this.startWatchdog();
             this.stopEmergency(); // Detener audio de emergencia si estaba sonando
@@ -299,6 +301,41 @@ class SonariaLanding {
             }
         } catch (err) {
             console.error("❌ [UI] Error al actualizar interfaz:", err);
+        }
+    }
+
+    startMetadataUpdates() {
+        this.updateMetadata();
+        this.metadataTimer = setInterval(() => this.updateMetadata(), 10000); // Cada 10s
+    }
+
+    async updateMetadata() {
+        // Solo actualizar si el usuario está escuchando o si queremos mostrar qué suena siempre
+        try {
+            const response = await fetch('https://radio.sonariaradio.online/status-json.xsl');
+            const data = await response.json();
+            
+            if (data && data.icestats && data.icestats.source) {
+                const source = data.icestats.source;
+                let title = "";
+                
+                // Icecast puede devolver un objeto o un array si hay múltiples mounts
+                if (Array.isArray(source)) {
+                    const radio = source.find(s => s.listenurl && s.listenurl.includes('/radio.mp3'));
+                    title = radio ? radio.title : "";
+                } else {
+                    title = source.title || "";
+                }
+
+                if (title && title !== this.trackTitle.textContent) {
+                    this.trackTitle.textContent = title;
+                    console.log("🎶 Ahora suena:", title);
+                } else if (!title && this.isPlaying) {
+                    this.trackTitle.textContent = "Transmitiendo en Vivo";
+                }
+            }
+        } catch (err) {
+            // Error silencioso para no ensuciar consola
         }
     }
 }
