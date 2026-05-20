@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
 
     <!-- Meta Etiquetas para Redes Sociales (Open Graph) -->
     <meta property="og:title" content="Sonaría Radio | Siente la Música">
-    <meta property="og:description" content="Sistema Orientador Normalista De Apoyo Radial IA - Escuela Normal Superior de Monterrey">
+    <meta property="og:description" content="Sistema Orientador Normalista De Apoyo Radial IA">
     <meta property="og:image" content="https://sonariaradio.online/assets/img/social_banner.png">
     <meta property="og:url" content="https://sonariaradio.online/">
     <meta property="og:type" content="website">
@@ -27,10 +28,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <!-- Fondo animado -->
     <div class="bg-glow"></div>
-    
+
     <main class="container">
         <header>
             <div class="logo-container">
@@ -58,16 +60,17 @@
 
             <div class="info-container">
                 <h2 class="track-title" id="track-title">Sintonizando señal...</h2>
-                <p class="artist-name" id="artist-name">Escuela Normal Superior de Monterrey</p>
-                
+                <p class="artist-name" id="artist-name">Sonaría</p>
+
                 <div class="controls">
                     <button class="btn-play" id="play-btn">
                         <i data-lucide="play" id="play-icon"></i>
                     </button>
-                    
+
                     <div class="volume-container">
                         <i data-lucide="volume-2"></i>
-                        <input type="range" min="0" max="1" step="0.1" value="0.8" class="volume-slider" id="volume-slider">
+                        <input type="range" min="0" max="1" step="0.1" value="0.8" class="volume-slider"
+                            id="volume-slider">
                     </div>
                 </div>
             </div>
@@ -102,4 +105,5 @@
         lucide.createIcons();
     </script>
 </body>
+
 </html>
