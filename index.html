@@ -79,13 +79,32 @@
         <!-- Nueva Sección de Interacción -->
         <section class="interaction-card">
             <div class="interaction-info">
-                <h3>Interactúa con la Radio</h3>
-                <p>Pide tus canciones, envía dedicatorias y vota en el ranking diario directamente desde Telegram.</p>
-                <a href="https://t.me/sonariaradio" target="_blank" class="btn-telegram">
-                    <i data-lucide="send"></i> Abrir en Telegram
-                </a>
+                <h3>Pide tu Canción</h3>
+                <p>Escribe tu nombre y la canción que deseas escuchar. Nuestro bot la enviará directamente a la emisora.</p>
+                
+                <form id="song-request-form" class="request-form">
+                    <div class="input-group">
+                        <i data-lucide="user"></i>
+                        <input type="text" id="request-name" placeholder="Tu Nombre o Apodo" required maxlength="30">
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="music"></i>
+                        <input type="text" id="request-song" placeholder="Nombre de la Canción y Artista" required maxlength="100">
+                    </div>
+                    <button type="submit" id="request-btn" class="btn-submit">
+                        <i data-lucide="send"></i> Enviar Petición
+                    </button>
+                    <div id="request-status" class="status-message"></div>
+                </form>
+
+                <div class="telegram-link-container">
+                    <p class="small-text">O únete a la comunidad oficial:</p>
+                    <a href="https://t.me/sonariaradio" target="_blank" class="btn-telegram-outline">
+                        <i data-lucide="message-circle"></i> Grupo de Telegram
+                    </a>
+                </div>
             </div>
-            <div class="qr-container">
+            <div class="qr-container hidden-mobile">
                 <img src="assets/img/qr_telegram.png" alt="QR Telegram" class="qr-img">
                 <span>@SONARIARADIO</span>
             </div>

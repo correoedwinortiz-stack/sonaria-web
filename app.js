@@ -64,7 +64,7 @@ class SonariaLanding {
             if (this.audio !== audioEl) return;
             if (this.userWantsPlay) {
                 this.trackTitle.textContent = "Cargando buffer...";
-                
+
                 // Si esperamos más de 7 segundos cargando, disparar emergencia
                 this.waitingTimer = setTimeout(() => {
                     if (this.audio === audioEl && this.userWantsPlay) {
@@ -79,10 +79,10 @@ class SonariaLanding {
             if (this.waitingTimer) clearTimeout(this.waitingTimer);
             this.reconnectAttempts = 0;
             this.lastDataTime = Date.now();
-            
+
             // Forzar actualización de metadatos inmediata para quitar "Cargando buffer..."
             this.updateMetadata();
-            
+
             this.setPlayingState(true);
             this.startWatchdog();
             this.stopEmergency(); // Detener audio de emergencia si estaba sonando
@@ -167,7 +167,7 @@ class SonariaLanding {
             this.emergencyAudio.addEventListener('ended', () => {
                 this.currentEmergencyIndex = (this.currentEmergencyIndex + 1) % this.emergencyUrls.length;
                 this.emergencyAudio.src = this.emergencyUrls[this.currentEmergencyIndex];
-                this.emergencyAudio.play().catch(() => {});
+                this.emergencyAudio.play().catch(() => { });
             });
         }
 
@@ -317,11 +317,11 @@ class SonariaLanding {
             const response = await fetch('https://radio.sonariaradio.online/status-json.xsl');
             if (!response.ok) throw new Error("Fallo en red");
             const data = await response.json();
-            
+
             if (data && data.icestats && data.icestats.source) {
                 const source = data.icestats.source;
                 let title = "";
-                
+
                 if (Array.isArray(source)) {
                     const radio = source.find(s => s.listenurl && s.listenurl.includes('/radio.mp3'));
                     title = radio ? radio.title : "";
@@ -331,7 +331,7 @@ class SonariaLanding {
 
                 if (this.trackTitle) {
                     let newTitle = title || "Transmitiendo en Vivo";
-                    
+
                     try {
                         if (newTitle.includes('Ã') || newTitle.includes('ð')) {
                             newTitle = decodeURIComponent(escape(newTitle));
@@ -358,7 +358,122 @@ class SonariaLanding {
     }
 }
 
+// --- Lógica de Peticiones Web ---
+class SongRequestHandler {
+    constructor() {
+        this.form = document.getElementById('song-request-form');
+        this.nameInput = document.getElementById('request-name');
+        this.songInput = document.getElementById('request-song');
+        this.submitBtn = document.getElementById('request-btn');
+        this.statusMsg = document.getElementById('request-status');
+
+        // ¡IMPORTANTE! Aquí debes pegar la URL de tu Cloudflare Worker
+        this.API_URL = 'https://radio-bot.correo-edwin-ortiz.workers.dev';
+
+        this.COOLDOWN_MINUTES = 5;
+
+        if (this.form) {
+            this.initListeners();
+            this.checkCooldown();
+        }
+    }
+
+    initListeners() {
+        this.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleRequest();
+        });
+    }
+
+    checkCooldown() {
+        const lastRequestTime = localStorage.getItem('sonaria_last_request');
+        if (lastRequestTime) {
+            const timePassed = Date.now() - parseInt(lastRequestTime);
+            const cooldownMs = this.COOLDOWN_MINUTES * 60 * 1000;
+
+            if (timePassed < cooldownMs) {
+                const remainingMinutes = Math.ceil((cooldownMs - timePassed) / 60000);
+                this.disableForm(`Por favor, espera ${remainingMinutes} minuto(s) para pedir otra canción.`);
+
+                setTimeout(() => {
+                    this.enableForm();
+                }, cooldownMs - timePassed);
+            }
+        }
+    }
+
+    disableForm(message) {
+        this.submitBtn.disabled = true;
+        this.submitBtn.style.opacity = '0.5';
+        this.submitBtn.style.cursor = 'not-allowed';
+        this.showStatus(message, 'warning');
+    }
+
+    enableForm() {
+        this.submitBtn.disabled = false;
+        this.submitBtn.style.opacity = '1';
+        this.submitBtn.style.cursor = 'pointer';
+        this.showStatus('', '');
+    }
+
+    showStatus(message, type) {
+        this.statusMsg.textContent = message;
+        this.statusMsg.className = `status-message ${type}`;
+        this.statusMsg.style.display = message ? 'block' : 'none';
+    }
+
+    async handleRequest() {
+        const name = this.nameInput.value.trim();
+        const song = this.songInput.value.trim();
+
+        if (!name || !song) return;
+
+        this.disableForm("Enviando petición...");
+
+        try {
+            const response = await fetch(this.API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, song })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                this.showStatus("¡Petición enviada a la cabina con éxito!", "success");
+                this.nameInput.value = '';
+                this.songInput.value = '';
+
+                localStorage.setItem('sonaria_last_request', Date.now().toString());
+
+                setTimeout(() => {
+                    this.enableForm();
+                }, this.COOLDOWN_MINUTES * 60 * 1000);
+            } else {
+                if (response.status === 429) {
+                    this.showStatus("Has superado el límite de peticiones. Espera unos minutos.", "error");
+                } else {
+                    this.showStatus(data.error || "Error al enviar la petición. Intenta más tarde.", "error");
+                }
+
+                setTimeout(() => {
+                    this.enableForm();
+                }, 5000);
+            }
+        } catch (error) {
+            console.error("Error al enviar petición:", error);
+            this.showStatus("Error de conexión. Asegúrate de configurar la URL del API.", "error");
+            setTimeout(() => {
+                this.enableForm();
+            }, 5000);
+        }
+    }
+}
+
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
     new SonariaLanding();
+    new SongRequestHandler();
 });

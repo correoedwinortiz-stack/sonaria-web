@@ -443,3 +443,146 @@ header {
         margin-bottom: 1.5rem;
     }
 }
+
+/* --- ESTILOS DEL FORMULARIO DE PETICIÓN --- */
+.request-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 350px;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group i {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-dim);
+    width: 18px;
+    height: 18px;
+}
+
+.input-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.8rem 1rem 0.8rem 2.8rem;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-submit:hover {
+    background: #ea580c; /* primary un poco más oscuro */
+    transform: translateY(-2px);
+}
+
+.btn-submit:disabled {
+    background: #64748b;
+    transform: none;
+}
+
+.status-message {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+    border-radius: 8px;
+    text-align: center;
+    display: none;
+}
+
+.status-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-message.warning {
+    background: rgba(234, 179, 8, 0.1);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.telegram-link-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.small-text {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.btn-telegram-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #24A1DE;
+    border: 1px solid #24A1DE;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: background 0.3s, color 0.3s;
+}
+
+.btn-telegram-outline:hover {
+    background: #24A1DE;
+    color: white;
+}
+
+.hidden-mobile {
+    display: flex;
+}
+
+@media (max-width: 600px) {
+    .hidden-mobile {
+        display: none !important;
+    }
+    .request-form {
+        margin: 0 auto 1.5rem;
+    }
+}
